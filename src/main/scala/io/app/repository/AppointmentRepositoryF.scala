@@ -4,7 +4,7 @@ import cats.effect.Effect
 import io.app.model.{Appointment, AppointmentWithId}
 
 import scala.collection.mutable
-
+//TODO: use doobie with in memory db, abstracting over the fact that the db is in memory
 final case class AppointmentRepositoryF[F[_]: Effect](
   private val appointments: mutable.Map[Long, AppointmentWithId]
 ) extends AppointmentRepository[F] {

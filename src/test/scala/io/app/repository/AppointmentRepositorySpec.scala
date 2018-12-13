@@ -3,8 +3,6 @@ package io.app.repository
 import java.time.ZonedDateTime
 
 import cats.effect.IO
-import doobie.h2.H2Transactor
-import doobie.util.transactor.Transactor
 import io.app.model.{Appointment, AppointmentWithId}
 import org.scalatest.{MustMatchers, WordSpec}
 
@@ -12,8 +10,6 @@ class AppointmentRepositorySpec extends WordSpec with MustMatchers {
 
   "The appointment repo" should {
 
-
-    H2Transactor.newH2Transactor("", "", "")
     "be empty" in {
       val repo = AppointmentRepositoryF.empty[IO].unsafeRunSync()
       repo.getAllAppointments.unsafeRunSync mustBe Nil
