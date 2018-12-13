@@ -3,6 +3,9 @@ package io.app.repository
 import io.app.model.{Appointment, AppointmentWithId}
 
 trait AppointmentRepository[F[_]] {
+
+  def ping: F[Unit]
+
   def getAllAppointments: F[Seq[AppointmentWithId]]
 
   def getAppointment(id: Long): F[Option[AppointmentWithId]]

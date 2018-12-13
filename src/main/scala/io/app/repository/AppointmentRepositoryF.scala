@@ -1,15 +1,18 @@
 package io.app.repository
 
-import cats.effect.ConcurrentEffect
+import cats.effect.Effect
 import io.app.model.{Appointment, AppointmentWithId}
 
 import scala.collection.mutable
 
-final case class AppointmentRepositoryF[F[_]: ConcurrentEffect](
+final case class AppointmentRepositoryF[F[_]: Effect](
   private val appointments: mutable.Map[Long, AppointmentWithId]
 ) extends AppointmentRepository[F] {
 
-  val F = implicitly[ConcurrentEffect[F]]
+  val F = implicitly[Effect[F]]
+
+  override def ping: F[Unit] =
+    F.delay { () }
 
   override def getAllAppointments: F[Seq[AppointmentWithId]] =
     F.delay { appointments.values.toSeq }
@@ -34,6 +37,6 @@ final case class AppointmentRepositoryF[F[_]: ConcurrentEffect](
 }
 
 object AppointmentRepositoryF {
-  def empty[F[_]](implicit F: ConcurrentEffect[F]): F[AppointmentRepositoryF[F]] =
+  def empty[F[_]](implicit F: Effect[F]): F[AppointmentRepositoryF[F]] =
     F.pure { new AppointmentRepositoryF[F](mutable.Map()) }
 }
