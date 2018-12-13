@@ -1,10 +1,9 @@
 package io.app
 
-import cats.effect.{Clock, ExitCode, IO, IOApp}
+import cats.effect.{ExitCode, IO, IOApp}
 import cats.implicits._
 import io.app.repository.AppointmentRepositoryF
 import io.app.services.{AppointmentService, HealthService}
-import io.prometheus.client.CollectorRegistry
 import org.http4s.metrics.prometheus.{Prometheus, PrometheusExportService}
 import org.http4s.server.Router
 import org.http4s.implicits._
@@ -13,9 +12,6 @@ import org.http4s.server.middleware.Logger
 import org.http4s.server.middleware.Metrics
 
 object Main extends IOApp {
-
-  implicit val clock = Clock.create[IO]
-  val registry = new CollectorRegistry()
 
   override def run(args: List[String]): IO[ExitCode] = {
     val program = for {
