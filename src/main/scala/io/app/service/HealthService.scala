@@ -1,4 +1,4 @@
-package io.app.services
+package io.app.service
 
 import cats.effect.{IO, _}
 import cats.implicits._

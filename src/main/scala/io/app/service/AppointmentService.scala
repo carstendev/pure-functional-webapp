@@ -1,6 +1,5 @@
-package io.app.services
+package io.app.service
 
-import cats.data.Kleisli
 import cats.effect.{IO, _}
 import cats.implicits._
 import io.app.model.{Appointment, AppointmentWithId}
@@ -9,9 +8,7 @@ import io.circe.generic.auto._
 import io.circe.syntax._
 import org.http4s._
 import org.http4s.circe._
-import org.http4s.client.middleware.{RequestLogger, ResponseLogger}
 import org.http4s.dsl.Http4sDsl
-import org.http4s.server.middleware.Logger
 
 object AppointmentService extends Http4sDsl[IO] {
 

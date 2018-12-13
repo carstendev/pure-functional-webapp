@@ -27,10 +27,9 @@ lazy val root = (project in file("."))
       "org.http4s" %% "http4s-circe" % Http4sVersion,
       "org.http4s" %% "http4s-prometheus-metrics" % Http4sVersion,
 
-
       "org.tpolecat" %% "doobie-core" % DoobieVersion,
       "org.tpolecat" %% "doobie-h2" % DoobieVersion, // H2 driver 1.4.197 + type mappings.
-
+      "org.tpolecat" %% "doobie-hikari" % DoobieVersion, // HikariCP transactor.
 
       "org.scalatest" %% "scalatest" % ScalaTestVersion % "test",
 
