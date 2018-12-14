@@ -1,6 +1,6 @@
 package io.app
 
-import cats.effect.Effect
+import cats.effect.Sync
 import cats.implicits._
 import com.typesafe.config.ConfigFactory
 import pureconfig.error.ConfigReaderException
@@ -17,7 +17,7 @@ package object config {
 
   object Config {
 
-    def load[F[_]](configFile: String = "application.conf")(implicit F: Effect[F]): F[Config] =
+    def load[F[_]](configFile: String = "application.conf")(implicit F: Sync[F]): F[Config] =
       F.pure(ConfigFactory.load(configFile)) // must use pure, not delay, otherwise loading the cfg fails
         .map(loadConfig[Config](_))
         .flatMap {
