@@ -1,18 +1,26 @@
 package io.app.database
 
-import cats.effect.Effect
-import doobie.implicits._
+import cats.effect.{Async, ContextShift, Effect}
 import doobie._
+import doobie.implicits._
+import io.app.config.DatabaseConfig
 
 object Database {
 
-  def createTables[F[_] : Effect](tx: Transactor[F]) = {
-    sql"""CREATE TABLE IF NOT EXISTS "APPOINTMENT"(
-         "ID" int AUTO_INCREMENT,
-         "START" timestamp without time zone NOT NULL,
-         "END" timestamp without time zone NOT NULL,
-         "DESCRIPTION" varchar(255),
-         CONSTRAINT "appointment_pkey" PRIMARY KEY ("ID")
-         );""".update.run.transact(tx)
+  def transactor[F[_] : Async : ContextShift](config: DatabaseConfig): F[Transactor[F]] = {
+    val F = implicitly[Async[F]]
+    F.delay { Transactor
+      .fromDriverManager[F](config.driver, config.url, config.user, config.password)
+    }
+  }
+
+  def createTables[F[_] : Effect](tx: Transactor[F]): F[Unit] = {
+    sql"""CREATE TABLE IF NOT EXISTS "appointment"(
+         "id" int AUTO_INCREMENT,
+         "start" timestamp without time zone NOT NULL,
+         "end" timestamp without time zone NOT NULL,
+         "description" text,
+         CONSTRAINT "appointment_pkey" PRIMARY KEY ("id")
+         );""".update.run.map(_ => ()).transact(tx)
   }
 }

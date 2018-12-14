@@ -2,17 +2,17 @@ package io.app.repository
 
 import java.sql.Timestamp
 import java.time.{ZoneId, ZonedDateTime}
-import io.app.repository.AppointmentRepositoryF._
 
-import cats.effect.Effect
+import io.app.repository.AppointmentRepositoryF._
+import cats.effect.ConcurrentEffect
 import doobie._
 import doobie.implicits._
 import io.app.model.{Appointment, AppointmentWithId}
 
-final class AppointmentRepositoryF[F[_] : Effect](tx: Transactor[F]) extends AppointmentRepository[F] {
+final class AppointmentRepositoryF[F[_] : ConcurrentEffect](tx: Transactor[F]) extends AppointmentRepository[F] {
 
   override def ping: F[Unit] =
-    sql"select id from appointment".query[Long].option.map(_ => ()).transact(tx)
+    sql"select id from appointment limit 1".query[Long].analysis.map(_ => ()).transact(tx)
 
   override def getAllAppointments: F[Seq[AppointmentWithId]] = {
     sql"select id, start, end, description from appointment".query[AppointmentWithId].to[Seq].transact(tx)
@@ -44,15 +44,14 @@ final class AppointmentRepositoryF[F[_] : Effect](tx: Transactor[F]) extends App
 
 object AppointmentRepositoryF {
 
-  def apply[F[_]](tx: Transactor[F])(implicit F: Effect[F]): F[AppointmentRepositoryF[F]] =
+  def apply[F[_]](tx: Transactor[F])(implicit F: ConcurrentEffect[F]): F[AppointmentRepositoryF[F]] =
     F.pure {
       new AppointmentRepositoryF(tx)
     }
 
   implicit val DateTimeMeta: Meta[ZonedDateTime] = {
     Meta[Timestamp]
-      .imap[ZonedDateTime] {
-      ts => ZonedDateTime.ofInstant(ts.toInstant, ZoneId.of("UTC"))
+      .imap[ZonedDateTime] { ts =>ZonedDateTime.ofInstant(ts.toInstant, ZoneId.of("UTC"))
     }(dt => new Timestamp(dt.toInstant.toEpochMilli))
   }
 }

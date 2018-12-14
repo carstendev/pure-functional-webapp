@@ -32,8 +32,8 @@ lazy val root = (project in file("."))
       "org.tpolecat" %% "doobie-hikari" % DoobieVersion, // HikariCP transactor.
 
       "org.scalatest" %% "scalatest" % ScalaTestVersion % "test",
-
-
+      
+      "com.github.pureconfig" %% "pureconfig" % "0.10.1",
       "ch.qos.logback" % "logback-classic" % LogbackVersion
     ),
     addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.6"),

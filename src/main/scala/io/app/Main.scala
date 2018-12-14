@@ -2,8 +2,7 @@ package io.app
 
 import cats.effect.{ExitCode, IO, IOApp}
 import cats.implicits._
-import doobie.h2.H2Transactor
-import doobie.util.transactor.Transactor
+import io.app.config.Config
 import io.app.database.Database
 import io.app.repository.AppointmentRepositoryF
 import io.app.service.{AppointmentService, HealthService}
@@ -16,12 +15,10 @@ import org.http4s.server.middleware.Metrics
 
 object Main extends IOApp {
 
-  private val tx =
-    Transactor
-      .fromDriverManager[IO]("org.h2.Driver", "jdbc:h2:mem:appointment_db;DB_CLOSE_DELAY=-1")
-
   override def run(args: List[String]): IO[ExitCode] = {
     val program = for {
+      config <- Config.load[IO]()
+      tx <- Database.transactor[IO](config.database)
       _ <- Database.createTables(tx)
       repo <- AppointmentRepositoryF.apply[IO](tx)
       prometheusService <- PrometheusExportService.build[IO]
@@ -40,7 +37,7 @@ object Main extends IOApp {
       )(Router("/" -> allRoutes).orNotFound)
 
       BlazeServerBuilder[IO]
-        .bindHttp(8080, "localhost")
+        .bindHttp(config.server.port, config.server.host)
         .withHttpApp(httpApp)
         .serve
         .compile

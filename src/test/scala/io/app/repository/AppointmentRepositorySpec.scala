@@ -15,7 +15,7 @@ class AppointmentRepositorySpec extends WordSpec with MustMatchers {
 
   private val tx =
     Transactor
-      .fromDriverManager[IO]("org.h2.Driver", "jdbc:h2:mem:appointment_db;DB_CLOSE_DELAY=-1")
+      .fromDriverManager[IO]("org.h2.Driver", "jdbc:h2:mem:appointment_db;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false")
 
   "The appointment repo" should {
 
