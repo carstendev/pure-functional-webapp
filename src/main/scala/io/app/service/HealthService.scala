@@ -11,7 +11,7 @@ object HealthService extends Http4sDsl[IO] {
   def service[F[_]](repository: AppointmentRepository[F])(implicit F: ConcurrentEffect[F]): HttpRoutes[F] =
     HttpRoutes.of[F] {
       case GET -> Root / "healthz" =>
-        repository.ping.flatMap(_ => F.pure(Response(status = Status.Ok)))
+        repository.ping.flatMap(_ => F.pure(Response(status = Status.Ok).withEntity("Appointment repository OK")))
     }
 
 }
