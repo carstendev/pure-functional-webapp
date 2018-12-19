@@ -3,7 +3,7 @@ An example of a web app, written in Scala, using pure functional programming con
 
 ## Goal
 The goal for this project is to demonstrate how to build an application using FP techniques in Scala.
-Coming from an OO background to Scala can be very hard and this project can hopefully ease the burden for some.
+Coming from an OO background to Scala can be very hard and this project can hopefully ease the burden for some people.
 
 ## Tech-Stack
 
