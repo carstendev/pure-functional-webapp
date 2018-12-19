@@ -6,7 +6,6 @@ The goal for this project is to demonstrate how to build an application using FP
 Coming from an OO background to Scala can be very hard and this project can hopefully ease the burden for some.
 
 ## Tech-Stack
-I am using the TypeLevel stack.
 
 - [Http4s](http://http4s.org/) the web server
 - [Circe](https://circe.github.io/circe/) for json serialization
