@@ -17,6 +17,6 @@ Coming from an OO background to Scala can be very hard and this project can hope
 
 ### What the heck is F[_]?
 The core domain of this project uses `F[_]` in a lot of placed. `F[_]` is a _higher kinded type_ and represents a type that abstracts over a type that holds another type, i.e. `List` and `Option`.
-When using `F[_]` we want to express that evaluation is suspended into "some effect type". This helps us and provides `referential transparency` even for otherwise side-effectful code.
+When using `F[_]` we want to express that evaluation is suspended into "some effect type". This can provide `referential transparency` even for otherwise side-effectful code, and helps us reason about the codebase.
 We can leave the effect type abstract, and bind it only at the edge of our application, when we bootstrap the `Server`.
 This enables us to swap out the used effect system with relative ease, if we so desire.
