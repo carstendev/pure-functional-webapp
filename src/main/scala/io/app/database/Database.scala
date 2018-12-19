@@ -11,6 +11,7 @@ import doobie.hikari._
 import doobie.util.ExecutionContexts
 import io.app.model.User
 
+
 object Database {
 
   def transactor[F[_] : Async : ContextShift](config: DatabaseConfig): F[Transactor[F]] = {
@@ -21,6 +22,9 @@ object Database {
     }
   }
 
+  /**
+    * Provides a transactor using the given config.
+    */
   def hikariTransactor[F[_] : Async : ContextShift](config: DatabaseConfig): Resource[F, HikariTransactor[F]] =
     for {
       ce <- ExecutionContexts.fixedThreadPool[F](32) // our connect EC
@@ -57,6 +61,10 @@ object Database {
     }
   }
 
+  /**
+    * Creates the initial database state.
+    * Side effects are suspended into the F context and nothing is executed by this function.
+    */
   def createTables[F[_] : Effect](tx: Transactor[F]): F[Unit] = {
     val appointment =
       sql"""CREATE TABLE IF NOT EXISTS "appointment"(
@@ -65,7 +73,7 @@ object Database {
          "end" timestamp without time zone NOT NULL,
          "description" text,
          CONSTRAINT "appointment_pkey" PRIMARY KEY ("id")
-         );""".update.run.map(_ => ()).transact(tx)
+         );""".update.run.map(_ => ())
 
     val user =
       sql"""CREATE TABLE IF NOT EXISTS "user"(
@@ -73,13 +81,13 @@ object Database {
          "name" text,
          "password" text,
          CONSTRAINT "user_pkey" PRIMARY KEY ("id")
-         );""".update.run.map(_ => ()).transact(tx)
+         );""".update.run.map(_ => ())
 
     val defaultUser = User("carsten", "123")
     val userInsert =
       sql"insert into user (name, password) values (${defaultUser.name}, ${defaultUser.password})"
-        .update.run.map(_ => ()).transact(tx)
+        .update.run.map(_ => ())
 
-    appointment.flatMap(_ => user).flatMap(_ => userInsert)
+    appointment.flatMap(_ => user).flatMap(_ => userInsert).transact(tx)
   }
 }

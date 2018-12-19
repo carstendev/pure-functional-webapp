@@ -13,6 +13,10 @@ import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.server.middleware.Logger
 import org.http4s.server.middleware.Metrics
 
+/**
+  * Bootstraps the application.
+  * Only at this point do we set, into which effect's we want to suspend our evaluation.
+  */
 object Main extends IOApp {
 
   def createServer[F[_] : ContextShift : ConcurrentEffect : Timer]: Resource[F, ExitCode] =
@@ -25,9 +29,9 @@ object Main extends IOApp {
 
       authProvider = BasicAuthProvider[F](config.auth, userRepo)
       authMiddleware = authProvider.authMiddleware
-      appointmentService = AppointmentService.service(repo)
-      healthService = HealthService.service(repo)
-      authService = AuthService.service(authProvider)
+      appointmentService = new AppointmentService().service(repo)
+      healthService = new HealthService().service(repo)
+      authService = new AuthService().service(authProvider)
       services = healthService <+> authService <+> authMiddleware(appointmentService)
       meteredRoutes = Metrics[F](Prometheus(prometheusService.collectorRegistry, "server"))(services)
       allRoutes = meteredRoutes <+> prometheusService.routes
@@ -50,6 +54,6 @@ object Main extends IOApp {
 
 
   override def run(args: List[String]): IO[ExitCode] =
-    createServer.use(IO.pure)
+    createServer.use(IO.pure) // Use IO as the effect type
 
 }

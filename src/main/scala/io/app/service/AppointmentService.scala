@@ -1,6 +1,6 @@
 package io.app.service
 
-import cats.effect.{IO, _}
+import cats.effect._
 import cats.implicits._
 import io.app.model.{Appointment, AppointmentWithId, UserWithId}
 import io.app.repository.AppointmentRepository
@@ -10,16 +10,13 @@ import org.http4s._
 import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
 
-object AppointmentService extends Http4sDsl[IO] {
-
-  private val logger = org.log4s.getLogger
+final class AppointmentService[F[_]] extends Http4sDsl[F] {
 
   val Appointments = "appointments"
 
-  def service[F[_]](repository: AppointmentRepository[F])(implicit F: ConcurrentEffect[F]): AuthedService[UserWithId, F] =
+  def service(repository: AppointmentRepository[F])(implicit F: ConcurrentEffect[F]): AuthedService[UserWithId, F] =
     AuthedService[UserWithId, F] {
-      case GET -> Root / Appointments as user =>
-        logger.info(user.toString)
+      case GET -> Root / Appointments as _ =>
         repository.getAllAppointments.flatMap { appointments =>
           F.pure(Response(status = Status.Ok).withEntity(appointments.asJson))
         }

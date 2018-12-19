@@ -1,12 +1,12 @@
 package io.app.service
 
-import cats.effect.{ConcurrentEffect, IO}
+import cats.effect.ConcurrentEffect
 import org.http4s.HttpRoutes
 import org.http4s.dsl.Http4sDsl
 
-object AuthService extends Http4sDsl[IO] {
-  def service[F[_]](authProvider: BasicAuthProvider[F])(implicit F: ConcurrentEffect[F]): HttpRoutes[F] =
-    HttpRoutes.of[F] { //TODO: add register route
+final class AuthService[F[_]](implicit F: ConcurrentEffect[F]) extends Http4sDsl[F] {
+  def service(authProvider: BasicAuthProvider[F]): HttpRoutes[F] =
+    HttpRoutes.of[F] { // TODO: add register route
       case req@ GET -> Root / "login" =>
         authProvider.logIn.run(req)
     }

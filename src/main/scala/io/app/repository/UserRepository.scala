@@ -2,6 +2,10 @@ package io.app.repository
 
 import io.app.model.{User, UserWithId}
 
+/**
+  * Represents the repository for users.
+  * All functions should suspend their effects, and not actually evaluate.
+  */
 trait UserRepository[F[_]] {
   def ping: F[Unit]
 
