@@ -4,8 +4,8 @@ import cats.effect._
 import cats.implicits._
 import io.app.config.Config
 import io.app.database.Database
-import io.app.repository.AppointmentRepositoryF
-import io.app.service.{AppointmentService, HealthService}
+import io.app.repository.{AppointmentRepositoryF, UserRepositoryF}
+import io.app.service.{AppointmentService, AuthService, BasicAuthProvider, HealthService}
 import org.http4s.metrics.prometheus.{Prometheus, PrometheusExportService}
 import org.http4s.server.Router
 import org.http4s.implicits._
@@ -20,18 +20,21 @@ object Main extends IOApp {
       config <- Resource.liftF(Config.load[F]())
       tx <- Database.hikariTransactor[F](config.database)
       repo <- Resource.liftF(AppointmentRepositoryF.apply[F](tx))
+      userRepo <- Resource.liftF(UserRepositoryF.apply[F](tx))
       prometheusService <- Resource.liftF(PrometheusExportService.build[F])
 
-
+      authProvider = BasicAuthProvider[F](config.auth, userRepo)
+      authMiddleware = authProvider.authMiddleware
       appointmentService = AppointmentService.service(repo)
       healthService = HealthService.service(repo)
-      services = appointmentService <+> healthService
+      authService = AuthService.service(authProvider)
+      services = healthService <+> authService <+> authMiddleware(appointmentService)
       meteredRoutes = Metrics[F](Prometheus(prometheusService.collectorRegistry, "server"))(services)
       allRoutes = meteredRoutes <+> prometheusService.routes
       httpApp = Logger(logBody = true, logHeaders = true)(Router("/" -> allRoutes).orNotFound)
 
       _ <- Resource.liftF(Database.createTables(tx))
-      //_ <- Resource.liftF(Database.migrate(config.database)) //not working atm
+      //_ <- Resource.liftF(Database.migrate(config.database)) // TODO: not working atm
 
       exitCode <- Resource.liftF(
         BlazeServerBuilder[F]

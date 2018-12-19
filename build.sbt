@@ -85,6 +85,9 @@ libraryDependencies ++= Seq(
 
   "org.apache.logging.log4j" %% "log4j-api-scala" % "11.0",
   "ch.qos.logback" % "logback-classic" % LogbackVersion,
+
+  "org.reactormonk" %% "cryptobits" % "1.2", // cookie signing
+
   "com.github.pureconfig" %% "pureconfig" % "0.10.1"
 )
 

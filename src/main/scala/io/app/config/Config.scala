@@ -8,10 +8,10 @@ import pureconfig._
 import pureconfig.generic.auto._
 
 case class ServerConfig(host: String, port: Int)
-
 case class DatabaseConfig(driver: String, url: String, user: String, password: String)
 
-case class Config(server: ServerConfig, database: DatabaseConfig)
+case class AuthConfig(privateKey: String)
+case class Config(server: ServerConfig, database: DatabaseConfig, auth: AuthConfig)
 
 object Config {
 

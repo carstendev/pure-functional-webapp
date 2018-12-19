@@ -9,6 +9,7 @@ import io.app.config.DatabaseConfig
 import org.flywaydb.core.Flyway
 import doobie.hikari._
 import doobie.util.ExecutionContexts
+import io.app.model.User
 
 object Database {
 
@@ -57,12 +58,28 @@ object Database {
   }
 
   def createTables[F[_] : Effect](tx: Transactor[F]): F[Unit] = {
-    sql"""CREATE TABLE IF NOT EXISTS "appointment"(
+    val appointment =
+      sql"""CREATE TABLE IF NOT EXISTS "appointment"(
          "id" int AUTO_INCREMENT,
          "start" timestamp without time zone NOT NULL,
          "end" timestamp without time zone NOT NULL,
          "description" text,
          CONSTRAINT "appointment_pkey" PRIMARY KEY ("id")
          );""".update.run.map(_ => ()).transact(tx)
+
+    val user =
+      sql"""CREATE TABLE IF NOT EXISTS "user"(
+         "id" int AUTO_INCREMENT,
+         "name" text,
+         "password" text,
+         CONSTRAINT "user_pkey" PRIMARY KEY ("id")
+         );""".update.run.map(_ => ()).transact(tx)
+
+    val defaultUser = User("carsten", "123")
+    val userInsert =
+      sql"insert into user (name, password) values (${defaultUser.name}, ${defaultUser.password})"
+        .update.run.map(_ => ()).transact(tx)
+
+    appointment.flatMap(_ => user).flatMap(_ => userInsert)
   }
 }
