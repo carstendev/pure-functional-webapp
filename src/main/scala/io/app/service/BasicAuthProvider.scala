@@ -4,7 +4,7 @@ import cats.data.{Kleisli, OptionT}
 import cats.effect._
 import cats.implicits._
 import io.app.config.AuthConfig
-import io.app.model.UserWithId
+import io.app.model.{User, UserWithId}
 import io.app.repository.UserRepository
 import org.http4s.headers.Authorization
 import org.http4s.server.AuthMiddleware
@@ -12,7 +12,7 @@ import org.http4s.{AuthedService, Request, Response, ResponseCookie, Status, _}
 import org.reactormonk.{CryptoBits, PrivateKey}
 
 import scala.io.Codec
-import scala.util.Try
+import scala.util.{Success, Try}
 
 
 case class BasicAuthProvider[F[_]](
@@ -23,6 +23,29 @@ case class BasicAuthProvider[F[_]](
   private val key = PrivateKey(Codec.toUTF8(authConfig.privateKey))
   private val crypto = CryptoBits(key)
   private val clock = java.time.Clock.systemUTC
+
+  def registerUser(request: Request[F]): F[Either[String, Unit]] = {
+    F.delay {
+
+      Try(request.headers.get(Authorization)
+        .map(_.value)
+        .map(_.substring("Basic".length).trim)
+        .map(BasicCredentials.apply).get)
+        .map { credentials =>
+          User(
+            name = credentials.username,
+            password = credentials.password
+          )
+        }
+
+    }.flatMap {
+      case Success(userToRegister) =>
+        userRepository.insertUser(userToRegister).map(Right(_))
+
+      case _ =>
+        F.pure(Left("User could not be registered"))
+    }
+  }
 
   def retrieveUser: Kleisli[F, Long, Either[String, UserWithId]] =
     Kleisli { id =>

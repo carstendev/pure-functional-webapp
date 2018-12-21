@@ -78,12 +78,12 @@ object Database {
     val user =
       sql"""CREATE TABLE IF NOT EXISTS "user"(
          "id" int AUTO_INCREMENT,
-         "name" text,
-         "password" text,
+         "name" text NOT NULL,
+         "password" text NOT NULL,
          CONSTRAINT "user_pkey" PRIMARY KEY ("id")
-         );""".update.run.map(_ => ())
+         );""".update.run.map(_ => ()) //TODO: h2 in memory only support id as key....
 
-    val defaultUser = User("carsten", "123")
+    val defaultUser = User("admin", "admin")
     val userInsert =
       sql"insert into user (name, password) values (${defaultUser.name}, ${defaultUser.password})"
         .update.run.map(_ => ())
