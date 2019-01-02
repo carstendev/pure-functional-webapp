@@ -2,14 +2,12 @@ package io.app.database
 
 import cats.effect._
 import doobie._
-import doobie.hikari.HikariTransactor
 import doobie.implicits._
 import cats.implicits._
 import io.app.config.DatabaseConfig
 import org.flywaydb.core.Flyway
 import doobie.hikari._
 import doobie.util.ExecutionContexts
-import io.app.model.User
 
 
 object Database {
@@ -29,7 +27,6 @@ object Database {
     for {
       ce <- ExecutionContexts.fixedThreadPool[F](32) // our connect EC
       te <- ExecutionContexts.cachedThreadPool[F] // our transaction EC
-      _  <- Resource.liftF(Async[F].delay(Class.forName("org.h2.Driver")))
       xa <- HikariTransactor.newHikariTransactor[F](
         driverClassName = config.driver,
         url = config.url,
@@ -41,13 +38,13 @@ object Database {
     } yield xa
 
 
-  // TODO: somehow the flyway migrations are not working...
-  // org.flywaydb.core.api.FlywayException: Unable to instantiate JDBC driver: org.h2.Driver
-  // => Check whether the jar file is present
   def migrate[F[_]](config: DatabaseConfig)(implicit F: Sync[F]): F[Unit] = {
+
     F.delay {
 
-      val flyway = new Flyway()
+      val cl = Class.forName(config.driver).getClassLoader
+
+      val flyway = new Flyway(cl)
 
       flyway.setDataSource(
         config.url,
@@ -59,35 +56,5 @@ object Database {
 
       ()
     }
-  }
-
-  /**
-    * Creates the initial database state.
-    * Side effects are suspended into the F context and nothing is executed by this function.
-    */
-  def createTables[F[_] : Effect](tx: Transactor[F]): F[Unit] = {
-    val appointment =
-      sql"""CREATE TABLE IF NOT EXISTS "appointment"(
-         "id" int AUTO_INCREMENT,
-         "start" timestamp without time zone NOT NULL,
-         "end" timestamp without time zone NOT NULL,
-         "description" text,
-         CONSTRAINT "appointment_pkey" PRIMARY KEY ("id")
-         );""".update.run.map(_ => ())
-
-    val user =
-      sql"""CREATE TABLE IF NOT EXISTS "user"(
-         "id" int AUTO_INCREMENT,
-         "name" text NOT NULL,
-         "password" text NOT NULL,
-         CONSTRAINT "user_pkey" PRIMARY KEY ("id")
-         );""".update.run.map(_ => ()) //TODO: h2 in memory only support id as key....
-
-    val defaultUser = User("admin", "admin")
-    val userInsert =
-      sql"insert into user (name, password) values (${defaultUser.name}, ${defaultUser.password})"
-        .update.run.map(_ => ())
-
-    appointment.flatMap(_ => user).flatMap(_ => userInsert).transact(tx)
   }
 }

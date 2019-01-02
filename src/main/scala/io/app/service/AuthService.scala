@@ -12,7 +12,7 @@ final class AuthService[F[_]](implicit F: ConcurrentEffect[F]) extends Http4sDsl
       case req@ GET -> Root / "login" =>
         authProvider.logIn.run(req)
 
-      case req@ GET -> Root / "register" =>
+      case req@ POST -> Root / "register" =>
         authProvider.registerUser(req).flatMap {
           case Right(_) =>
             F.pure(Response(status = Status.Ok).withEntity("User is registered"))

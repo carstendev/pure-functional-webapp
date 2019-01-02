@@ -12,20 +12,20 @@ import io.app.model.{Appointment, AppointmentWithId}
 final class AppointmentRepositoryF[F[_] : ConcurrentEffect](tx: Transactor[F]) extends AppointmentRepository[F] {
 
   override def ping: F[Unit] =
-    sql"select id from appointment limit 1".query[Long].analysis.map(_ => ()).transact(tx)
+    sql"""select "id" from "appointment" limit 1""".query[Long].analysis.map(_ => ()).transact(tx)
 
   override def getAllAppointments: F[Seq[AppointmentWithId]] = {
-    sql"select id, start, end, description from appointment".query[AppointmentWithId].to[Seq].transact(tx)
+    sql"""select "id", "start", "end", "description" from "appointment"""".query[AppointmentWithId].to[Seq].transact(tx)
   }
 
   override def getAppointment(id: Long): F[Option[AppointmentWithId]] =
-    sql"select id, start, end, description from appointment where id = $id".query[AppointmentWithId].option.transact(tx)
+    sql"""select "id", "start", "end", "description" from "appointment" where "id" = $id""".query[AppointmentWithId].option.transact(tx)
 
   override def insertAppointment(appointment: Appointment): F[Unit] = {
     val start = appointment.start
     val end = appointment.end
     val description = appointment.description
-    sql"insert into appointment (start, end, description) values ($start, $end, $description)"
+    sql"""insert into "appointment" ("start", "end", "description") values ($start, $end, $description)"""
       .update.run.map(_ => ()).transact(tx)
   }
 
@@ -34,12 +34,12 @@ final class AppointmentRepositoryF[F[_] : ConcurrentEffect](tx: Transactor[F]) e
     val start = appointmentWithId.start
     val end = appointmentWithId.end
     val description = appointmentWithId.description
-    sql"update appointment set start = $start, end = $end, description = $description where id = $id"
+    sql"""update "appointment" set "start" = $start, "end" = $end, "description" = $description where "id" = $id"""
       .update.run.map(_ => ()).transact(tx)
   }
 
   override def deleteAppointment(id: Long): F[Unit] =
-    sql"delete from appointment where id = $id".update.run.map(_ => ()).transact(tx)
+    sql"""delete from "appointment" where "id" = $id""".update.run.map(_ => ()).transact(tx)
 }
 
 object AppointmentRepositoryF {

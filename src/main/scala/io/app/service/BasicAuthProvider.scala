@@ -40,7 +40,14 @@ case class BasicAuthProvider[F[_]](
 
     }.flatMap {
       case Success(userToRegister) =>
-        userRepository.insertUser(userToRegister).map(Right(_))
+
+        userRepository.getUser(userToRegister.name).flatMap {
+          case Some(user) =>
+            F.pure(Left(s"User with name: ${user.name} already exists"))
+
+          case None =>
+            userRepository.insertUser(userToRegister).map(Right(_))
+        }
 
       case _ =>
         F.pure(Left("User could not be registered"))

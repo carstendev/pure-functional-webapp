@@ -37,8 +37,7 @@ object Main extends IOApp {
       allRoutes = meteredRoutes <+> prometheusService.routes
       httpApp = Logger(logBody = true, logHeaders = true)(Router("/" -> allRoutes).orNotFound)
 
-      _ <- Resource.liftF(Database.createTables(tx))
-      //_ <- Resource.liftF(Database.migrate(config.database)) // TODO: not working atm
+      _ <- Resource.liftF(Database.migrate(config.database))
 
       exitCode <- Resource.liftF(
         BlazeServerBuilder[F]
