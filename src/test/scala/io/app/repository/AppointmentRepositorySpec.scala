@@ -5,7 +5,7 @@ import java.time.{ZoneId, ZonedDateTime}
 import cats.effect.IO
 import doobie.util.transactor.Transactor
 import io.app.database.Database
-import io.app.model.{Appointment, AppointmentWithId}
+import io.app.model.{Appointment, AppointmentDao}
 import org.scalatest.{MustMatchers, WordSpec}
 
 class AppointmentRepositorySpec extends WordSpec with MustMatchers {

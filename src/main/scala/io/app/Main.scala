@@ -23,14 +23,14 @@ object Main extends IOApp {
     for {
       config <- Resource.liftF(Config.load[F]())
       tx <- Database.hikariTransactor[F](config.database)
-      repo <- Resource.liftF(AppointmentRepositoryF.apply[F](tx))
+      appRepo <- Resource.liftF(AppointmentRepositoryF.apply[F](tx))
       userRepo <- Resource.liftF(UserRepositoryF.apply[F](tx))
       prometheusService <- Resource.liftF(PrometheusExportService.build[F])
 
       authProvider = BasicAuthProvider[F](config.auth, userRepo)
       authMiddleware = authProvider.authMiddleware
-      appointmentService = new AppointmentService().service(repo)
-      healthService = new HealthService().service(repo)
+      appointmentService = new AppointmentService().service(appRepo)
+      healthService = new HealthService().service(appRepo, userRepo)
       authService = new AuthService().service(authProvider)
       services = healthService <+> authService <+> authMiddleware(appointmentService)
       meteredRoutes = Metrics[F](Prometheus(prometheusService.collectorRegistry, "server"))(services)

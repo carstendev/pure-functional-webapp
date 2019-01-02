@@ -16,31 +16,38 @@ final class AppointmentService[F[_]] extends Http4sDsl[F] {
 
   def service(repository: AppointmentRepository[F])(implicit F: ConcurrentEffect[F]): AuthedService[UserWithId, F] =
     AuthedService[UserWithId, F] {
-      case GET -> Root / Appointments as _ =>
-        repository.getAllAppointments.flatMap { appointments =>
+      case GET -> Root / Appointments as user => // Users can only see their own appointments
+        repository.getAllAppointments.filter(_.userId == user.id).compile.toList.flatMap { appointments =>
           F.pure(Response(status = Status.Ok).withEntity(appointments.asJson))
         }
 
-      case GET -> Root / Appointments / LongVar(id) as _ =>
+      case GET -> Root / Appointments / LongVar(id) as user =>
         repository.getAppointment(id).flatMap {
-          case Some(appointment) =>
+          case Some(appointment) if appointment.userId == user.id =>
             F.pure(Response(status = Status.Ok).withEntity(appointment.asJson))
-          case None =>
+
+          case _ =>
             F.pure(Response(status = Status.NotFound))
         }
 
-      case authedReq@POST -> Root / Appointments as _ =>
+      case authedReq@POST -> Root / Appointments as user =>
         authedReq.req.decodeJson[Appointment]
-          .flatMap(repository.insertAppointment)
-          .flatMap(appointment => F.pure(Response(status = Status.Created).withEntity(appointment.asJson)))
+          .flatMap(repository.insertAppointment(_, user.id))
+          .flatMap(id => F.pure(Response(status = Status.Created).withEntity(id.asJson)))
 
       case authedReq@PUT -> Root / Appointments as _ =>
         authedReq.req.decodeJson[AppointmentWithId]
           .flatMap(repository.updateAppointment)
           .flatMap(_ => F.pure(Response(status = Status.Ok)))
 
-      case DELETE -> Root / Appointments / LongVar(id) as _ =>
-        repository.deleteAppointment(id)
-          .flatMap(_ => F.pure(Response(status = Status.NoContent)))
+      case DELETE -> Root / Appointments / LongVar(id) as user =>
+        repository.getAppointment(id).flatMap {
+          case Some(appointment) if appointment.userId == user.id =>
+            repository.deleteAppointment(id)
+              .flatMap(_ => F.pure(Response(status = Status.NoContent)))
+
+          case _ =>
+            F.pure(Response(status = Status.NoContent))
+        }
     }
 }

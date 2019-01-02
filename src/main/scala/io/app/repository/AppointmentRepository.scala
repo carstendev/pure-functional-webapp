@@ -1,6 +1,9 @@
 package io.app.repository
 
-import io.app.model.{Appointment, AppointmentWithId}
+import java.sql.SQLException
+
+import fs2.Stream
+import io.app.model.{Appointment, AppointmentDao, AppointmentWithId}
 
 /**
   * Represents the repository for appointments.
@@ -8,13 +11,13 @@ import io.app.model.{Appointment, AppointmentWithId}
   */
 trait AppointmentRepository[F[_]] {
 
-  def ping: F[Unit]
+  def ping: F[Either[SQLException, Option[Long]]]
 
-  def getAllAppointments: F[Seq[AppointmentWithId]]
+  def getAllAppointments: Stream[F, AppointmentDao]
 
-  def getAppointment(id: Long): F[Option[AppointmentWithId]]
+  def getAppointment(id: Long): F[Option[AppointmentDao]]
 
-  def insertAppointment(appointment: Appointment): F[Unit]
+  def insertAppointment(appointment: Appointment, userId: Long): F[Long]
 
   def updateAppointment(appointmentWithId: AppointmentWithId): F[Unit]
 

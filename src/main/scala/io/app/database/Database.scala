@@ -2,7 +2,6 @@ package io.app.database
 
 import cats.effect._
 import doobie._
-import doobie.implicits._
 import cats.implicits._
 import io.app.config.DatabaseConfig
 import org.flywaydb.core.Flyway
