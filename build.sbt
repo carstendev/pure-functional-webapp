@@ -11,7 +11,7 @@ val Log4jVersion = "2.11.1"
 organization := "io.github.carstendev"
 name := "pure-functional-webapp"
 version := "0.0.1-SNAPSHOT"
-scalaVersion := "2.12.7"
+scalaVersion := "2.12.8"
 
 scalacOptions ++= Seq(
   "-deprecation", // Emit warning and location for usages of deprecated APIs.
