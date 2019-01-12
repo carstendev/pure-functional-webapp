@@ -5,7 +5,7 @@ val ScalaTestVersion = "3.0.5"
 val LogbackVersion = "1.2.3"
 val CirceVersion = "0.10.1"
 val DoobieVersion = "0.6.0"
-val FlywayVersion = "5.2.4" // 507
+val FlywayVersion = "5.2.4"
 val Log4jVersion = "2.11.1"
 
 organization := "io.github.carstendev"
