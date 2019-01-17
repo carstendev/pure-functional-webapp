@@ -75,6 +75,8 @@ libraryDependencies ++= Seq(
   "org.http4s" %% "http4s-circe" % Http4sVersion,
   "org.http4s" %% "http4s-prometheus-metrics" % Http4sVersion,
 
+  "org.bitbucket.b_c" % "jose4j" % "0.6.4", // jwt handling
+
   "org.hsqldb" % "hsqldb" % "2.4.1",
   "org.tpolecat" %% "doobie-core" % DoobieVersion,
   "org.tpolecat" %% "doobie-hikari" % DoobieVersion, // HikariCP transactor.
@@ -85,9 +87,7 @@ libraryDependencies ++= Seq(
 
   "org.apache.logging.log4j" %% "log4j-api-scala" % "11.0",
   "ch.qos.logback" % "logback-classic" % LogbackVersion,
-
-  "org.reactormonk" %% "cryptobits" % "1.2", // cookie signing
-
+  
   "com.github.pureconfig" %% "pureconfig" % "0.10.1"
 )
 

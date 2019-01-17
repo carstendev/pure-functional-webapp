@@ -9,7 +9,7 @@ import pureconfig.generic.auto._
 
 case class ServerConfig(host: String, port: Int)
 case class DatabaseConfig(driver: String, url: String, user: String, password: String)
-case class AuthConfig(privateKey: String)
+case class AuthConfig(audience: String, issuer: String, jwksLocation: String)
 
 // representation of the complete config
 case class Config(server: ServerConfig, database: DatabaseConfig, auth: AuthConfig)

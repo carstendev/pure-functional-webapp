@@ -20,13 +20,13 @@ final class AppointmentRepositoryF[F[_] : ConcurrentEffect](tx: Transactor[F]) e
   }
 
   override def getAppointment(id: Long): F[Option[AppointmentDao]] =
-    sql"select id, start, end, description, user_id from appointment where id = $id".query[AppointmentDao].option.transact(tx)
+    sql"select id, start, end, description from appointment where id = $id".query[AppointmentDao].option.transact(tx)
 
-  override def insertAppointment(appointment: Appointment, userId: Long): F[Long] = {
+  override def insertAppointment(appointment: Appointment): F[Long] = {
     val start = appointment.start
     val end = appointment.end
     val description = appointment.description
-    sql"insert into appointment (start, end, description, user_id) values ($start, $end, $description, $userId)"
+    sql"insert into appointment (start, end, description) values ($start, $end, $description)"
       .update.withUniqueGeneratedKeys[Long]("id").transact(tx)
   }
 

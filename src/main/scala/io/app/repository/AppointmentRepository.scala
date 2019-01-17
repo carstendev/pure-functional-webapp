@@ -17,7 +17,7 @@ trait AppointmentRepository[F[_]] {
 
   def getAppointment(id: Long): F[Option[AppointmentDao]]
 
-  def insertAppointment(appointment: Appointment, userId: Long): F[Long]
+  def insertAppointment(appointment: Appointment): F[Long]
 
   def updateAppointment(appointmentWithId: AppointmentWithId): F[Unit]
 
