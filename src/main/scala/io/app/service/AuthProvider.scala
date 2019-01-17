@@ -20,8 +20,9 @@ case class AuthProvider[F[_]](
 )(implicit F: Effect[F]) {
 
   def authMiddleware: AuthMiddleware[F, User] = {
-    val httpsJwks            = new HttpsJwks(authConfig.jwksLocation)
+    val httpsJwks = new HttpsJwks(authConfig.jwksLocation)
     val httpsJwksKeyResolver = new HttpsJwksVerificationKeyResolver(httpsJwks)
+
     val jwtConsumer = new JwtConsumerBuilder()
       .setRequireExpirationTime()
       .setAllowedClockSkewInSeconds(30)
@@ -39,11 +40,12 @@ case class AuthProvider[F[_]](
           User(1, name)
         })
         .toEither
-        .leftMap(_ => "Invalid authentication supplied")
+        .leftMap(_ => "Invalid authentication")
     }
 
-    val onFailure: AuthedService[String, F] = Kleisli(
-      _ => OptionT.pure(Response[F](Status.Unauthorized)))
+    val onFailure: AuthedService[String, F] = Kleisli { _ =>
+      OptionT.pure(Response[F](Status.Unauthorized))
+    }
 
     val authUser: Kleisli[F, Request[F], Either[String, User]] = Kleisli { request =>
       val token = request.headers
@@ -53,7 +55,7 @@ case class AuthProvider[F[_]](
       val user = token.map { t =>
         verifyToken(t)
       }
-      user.getOrElse(F.pure("The resource requires authentication".asLeft[User]))
+      user.getOrElse(F.pure("Resource requires authentication".asLeft[User]))
     }
 
     AuthMiddleware(authUser, onFailure)
