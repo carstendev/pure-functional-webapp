@@ -50,12 +50,9 @@ case class AuthProvider[F[_]](
     val authUser: Kleisli[F, Request[F], Either[String, User]] = Kleisli { request =>
       val token = request.headers
         .get(Authorization)
-        .map(h => h.value.drop(AuthScheme.Bearer.length + 1))
+        .map(_.value.drop(s"${AuthScheme.Bearer} ".length))
 
-      val user = token.map { t =>
-        verifyToken(t)
-      }
-      user.getOrElse(F.pure("Resource requires authentication".asLeft[User]))
+      token.fold(F.pure("Resource requires authentication".asLeft[User]))(verifyToken)
     }
 
     AuthMiddleware(authUser, onFailure)
